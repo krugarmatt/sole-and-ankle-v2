@@ -14,6 +14,7 @@ const ShoeCard = ({
   releaseDate,
   numOfColors,
 }) => {
+  const isOnSale = typeof salePrice === "number";
   // There are 3 variants possible, based on the props:
   //   - new-release
   //   - on-sale
@@ -25,7 +26,7 @@ const ShoeCard = ({
   // both on-sale and new-release, but in this case, `on-sale`
   // will triumph and be the variant used.
   // prettier-ignore
-  const variant = typeof salePrice === 'number'
+  const variant = isOnSale
     ? 'on-sale'
     : isNewShoe(releaseDate)
       ? 'new-release'
@@ -35,15 +36,18 @@ const ShoeCard = ({
     <Link href={`/shoe/${slug}`}>
       <Wrapper>
         <ImageWrapper>
+          {variant === "on-sale" && <SaleBanner>Sale</SaleBanner>}
+          {variant === "new-release" && <NewReleaseBanner>Just Released!</NewReleaseBanner>}
           <Image alt="" src={imageSrc} />
         </ImageWrapper>
         <Spacer size={12} />
         <Row>
           <Name>{name}</Name>
-          <Price>{formatPrice(price)}</Price>
+          <Price $isOnSale={isOnSale}>{formatPrice(price)}</Price>
         </Row>
         <Row>
           <ColorInfo>{pluralize('Color', numOfColors)}</ColorInfo>
+          {isOnSale && <SalePrice>{formatPrice(salePrice)}</SalePrice>}
         </Row>
       </Wrapper>
     </Link>
@@ -61,9 +65,14 @@ const ImageWrapper = styled.div`
   position: relative;
 `;
 
-const Image = styled.img``;
+const Image = styled.img`
+  border-radius: 16px 16px 4px 4px;
+  max-width: 100%;
+`;
 
 const Row = styled.div`
+  display: flex;
+  justify-content: space-between;
   font-size: 1rem;
 `;
 
@@ -72,7 +81,10 @@ const Name = styled.h3`
   color: ${COLORS.gray[900]};
 `;
 
-const Price = styled.span``;
+const Price = styled.span`
+  color: ${(p) => (p.$isOnSale ? COLORS.gray[700] : null)};
+  text-decoration: ${(p) => (p.$isOnSale ? "line-through" : null)};
+`;
 
 const ColorInfo = styled.p`
   color: ${COLORS.gray[700]};
@@ -81,6 +93,28 @@ const ColorInfo = styled.p`
 const SalePrice = styled.span`
   font-weight: ${WEIGHTS.medium};
   color: ${COLORS.primary};
+`;
+
+const PromotionalBanner = styled.div`
+  border-radius: 2px;
+  color: ${COLORS.white};
+  font-weight: ${WEIGHTS.bold};
+  height: 32px;
+  position: absolute;
+  top: 12px;
+  right: -4px;
+  font-size: 0.875rem;
+  line-height: 32px;
+  padding-left: 11px;
+  padding-right: 11px;
+`;
+
+const SaleBanner = styled(PromotionalBanner)`
+  background-color: ${COLORS.primary};
+`;
+
+const NewReleaseBanner = styled(PromotionalBanner)`
+  background-color: ${COLORS.secondary};
 `;
 
 export default ShoeCard;
